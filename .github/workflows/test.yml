@@ -1,0 +1,102 @@
+name: test
+
+on: [push]
+
+jobs:
+  luacheck:
+    runs-on: ubuntu-latest
+    steps:
+    -
+      name: Checkout
+      uses: actions/checkout@v2
+    -
+      name: Setup Lua
+      uses: leafo/gh-actions-lua@v8.0.0
+    -
+      name: Setup Luarocks
+      uses: leafo/gh-actions-luarocks@v4
+    -
+      name: Install Tools
+      run: luarocks install luacheck
+    -
+      name: Run luacheck
+      run: |
+        luacheck .
+
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:14.3
+        env:
+          # POSTGRES_HOST_AUTH_METHOD: trust
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    strategy:
+      matrix:
+        lua-version:
+          - "5.1"
+          - "5.2"
+          - "5.3"
+          - "5.4"
+          - "luajit-2.0.5"
+          - "luajit-openresty"
+    steps:
+    -
+      name: Checkout
+      uses: actions/checkout@v2
+      with:
+        submodules: 'true'
+    -
+      name: Setup Lua ${{ matrix.lua-version }}
+      uses: leafo/gh-actions-lua@v8.0.0
+      with:
+        luaVersion: ${{ matrix.lua-version }}
+    -
+      name: Setup Luarocks
+      uses: leafo/gh-actions-luarocks@v4
+    -
+      name: Install Required Packages
+      run: |
+        sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
+        wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
+        sudo apt-get update
+        sudo apt-get install libpq-dev -y
+    -
+      name: Install
+      run: |
+        luarocks make LIBPQ_INCDIR=/usr/include/postgresql LIBPQ_COVERAGE=1
+    -
+      name: Install Test Tools
+      run: |
+        sudo apt install lcov -y
+        luarocks install testcase
+        luarocks install setenv
+    -
+      name: Run Test
+      env:
+          PGHOST: 127.0.0.1
+          PGPORT: 5432
+          PGUSER: postgres
+          PGPASSWORD: postgres
+          PGDATABASE: postgres
+      run: |
+        testcase ./test/
+    -
+      name: Generate coverage reports
+      run: |
+        sh ./covgen.sh
+    -
+      name: Upload C coverage to Codecov
+      uses: codecov/codecov-action@v2
+      with:
+        files: ./coverage/lcov.info
+        flags: unittests
