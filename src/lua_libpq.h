@@ -23,25 +23,33 @@
 #ifndef lua_libpq_h
 #define lua_libpq_h
 
+#include <inttypes.h>
+#include <string.h>
+// libpq
 #include <libpq-fe.h>
 #include <postgres_ext.h>
-#include <string.h>
 // lua
 #include <lauxhlib.h>
 #include <lua_errno.h>
 
-#define LIBPQ_CONN_MT   "libpq.conn"
-#define LIBPQ_CANCEL_MT "libpq.cancel"
-#define LIBPQ_RESULT_MT "libpq.result"
-#define LIBPQ_NOTIFY_MT "libpq.notify"
+#define LIBPQ_CONN_MT "libpq.conn"
 
 void libpq_conn_init(lua_State *L);
+
+#define LIBPQ_CANCEL_MT "libpq.cancel"
 void libpq_cancel_init(lua_State *L);
 PGcancel **libpq_cancel_new(lua_State *L);
+
+#define LIBPQ_RESULT_MT "libpq.result"
 void libpq_result_init(lua_State *L);
 PGresult **libpq_result_new(lua_State *L, int noclear);
+PGresult *libpq_check_result(lua_State *L);
+
+#define LIBPQ_NOTIFY_MT "libpq.notify"
 void libpq_notify_init(lua_State *L);
 PGnotify **libpq_notify_new(lua_State *L);
+
+void libpq_util_init(lua_State *L);
 
 static inline void libpq_register_mt(lua_State *L, const char *tname,
                                      struct luaL_Reg mmethod[],
@@ -109,6 +117,15 @@ static inline const char *libpq_param2string(lua_State *L, int idx)
         lua_replace(L, idx);
     }
     return lua_tostring(L, idx);
+}
+
+static inline uintmax_t libpq_str2uint(char *str)
+{
+    errno = 0;
+    if (*str) {
+        return strtoumax(str, NULL, 10);
+    }
+    return UINTMAX_MAX;
 }
 
 #endif
