@@ -96,3 +96,136 @@ function testcase.get_result_rows()
     })
 end
 
+function testcase.iterate_result_rows()
+    local c = assert(libpq.connect())
+    local res = assert(c:exec([[
+        CREATE TEMP TABLE test_tbl (
+            id serial,
+            str varchar,
+            num integer
+        )
+    ]]))
+    assert.equal(res:status(), libpq.RES_COMMAND_OK)
+
+    -- test that no rows
+    res = assert(c:exec([[
+        INSERT INTO test_tbl (str, num)
+        VALUES (
+            'foo', 101
+        ), (
+            'bar', 102
+        )
+    ]]))
+    assert.equal(res:status(), libpq.RES_COMMAND_OK)
+    local rows = {}
+    for n, row in libpq.util.iterate_result_rows(res) do
+        rows[n] = row
+    end
+    assert.empty(rows)
+
+    -- test that iterates the result rows
+    res = assert(c:exec([[
+        SELECT * FROM test_tbl
+    ]]))
+    assert.equal(res:status(), libpq.RES_TUPLES_OK)
+    rows = {}
+    for n, row in libpq.util.iterate_result_rows(res) do
+        rows[n] = row
+    end
+    assert.equal(rows, {
+        {
+            '1',
+            'foo',
+            '101',
+        },
+        {
+            '2',
+            'bar',
+            '102',
+        },
+    })
+
+    -- test that iterates the result rows in single row mode
+    assert(c:send_query([[
+        SELECT * FROM test_tbl
+    ]]))
+    assert(c:set_single_row_mode())
+    rows = {}
+    local err
+    res, err = c:get_result()
+    while res do
+        for _, row in libpq.util.iterate_result_rows(res) do
+            rows[#rows + 1] = row
+        end
+
+        res, err = c:get_result()
+    end
+    if err then
+        error(err)
+    end
+
+    assert.equal(rows, {
+        {
+            '1',
+            'foo',
+            '101',
+        },
+        {
+            '2',
+            'bar',
+            '102',
+        },
+    })
+end
+
+function testcase.iterate_result_rows_in_single_row_mode()
+    local c = assert(libpq.connect())
+    local res = assert(c:exec([[
+        CREATE TEMP TABLE test_tbl (
+            id serial,
+            str varchar,
+            num integer
+        )
+    ]]))
+    assert.equal(res:status(), libpq.RES_COMMAND_OK)
+    res = assert(c:exec([[
+        INSERT INTO test_tbl (str, num)
+        VALUES (
+            'foo', 101
+        ), (
+            'bar', 102
+        )
+    ]]))
+    assert.equal(res:status(), libpq.RES_COMMAND_OK)
+
+    -- test that iterates the result rows in single row mode
+    assert(c:send_query([[
+        SELECT * FROM test_tbl
+    ]]))
+    assert(c:set_single_row_mode())
+    local rows = {}
+    local err
+    res, err = c:get_result()
+    while res do
+        for _, row in libpq.util.iterate_result_rows(res) do
+            rows[#rows + 1] = row
+        end
+        res, err = c:get_result()
+    end
+    if err then
+        error(err)
+    end
+
+    assert.equal(rows, {
+        {
+            '1',
+            'foo',
+            '101',
+        },
+        {
+            '2',
+            'bar',
+            '102',
+        },
+    })
+end

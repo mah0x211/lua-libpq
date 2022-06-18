@@ -23,6 +23,47 @@
 // lua
 #include "lua_libpq.h"
 
+static int iterate_result_rows(lua_State *L)
+{
+    const PGresult *res = libpq_check_result(L);
+    int n               = lauxh_optpinteger(L, 2, 0);
+    int nrow            = PQntuples(res);
+
+    if (n < nrow) {
+        int ncol = PQnfields(res);
+
+        lua_settop(L, 1);
+        lua_pushinteger(L, n + 1);
+        lua_createtable(L, ncol, 0);
+        for (int i = 0; i < ncol; i++) {
+            if (!PQgetisnull(res, n, i)) {
+                lauxh_pushstr2arr(L, i + 1, PQgetvalue(res, n, i));
+            }
+        }
+        return 2;
+    }
+    // done
+    return 0;
+}
+
+static int iterate_result_rows_lua(lua_State *L)
+{
+    int n = 0;
+
+    libpq_check_result(L);
+    n = lauxh_optpinteger(L, 2, 0);
+
+    lua_settop(L, 1);
+    lua_pushcclosure(L, iterate_result_rows, 0);
+    lua_insert(L, 1);
+    if (n < 1) {
+        lua_pushnil(L);
+    } else {
+        lua_pushinteger(L, n);
+    }
+    return 3;
+}
+
 static int get_result_rows_lua(lua_State *L)
 {
     const PGresult *res = libpq_check_result(L);
@@ -125,5 +166,6 @@ void libpq_util_init(lua_State *L)
     lua_createtable(L, 0, 1);
     lauxh_pushfn2tbl(L, "get_result_stat", get_result_stat_lua);
     lauxh_pushfn2tbl(L, "get_result_rows", get_result_rows_lua);
+    lauxh_pushfn2tbl(L, "iterate_result_rows", iterate_result_rows_lua);
     lua_setfield(L, -2, "util");
 }
