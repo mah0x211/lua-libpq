@@ -64,61 +64,6 @@ function testcase.get_attributes()
     assert.equal(res:nparams(), 0)
 end
 
-function testcase.stat()
-    local c = assert(libpq.connect())
-    local res = assert(c:exec([[
-        CREATE TEMP TABLE test_tbl (
-            id serial,
-            str varchar,
-            num integer
-        )
-    ]]))
-
-    -- test that stat table must contains: status, status_text, cmd_status
-    local stat = assert(res:stat())
-    assert.is_table(stat)
-    assert.contains(stat, {
-        status = libpq.RES_COMMAND_OK,
-        status_text = 'PGRES_COMMAND_OK',
-        cmd_status = 'CREATE TABLE',
-    })
-
-    -- test that stat table contains the RES_EMPTY_QUERY status
-    res = assert(c:exec(''))
-    stat = assert(res:stat())
-    assert.equal(stat, {
-        status = libpq.RES_EMPTY_QUERY,
-        status_text = 'PGRES_EMPTY_QUERY',
-        cmd_status = '',
-    })
-
-    -- test that stat table contains the RES_TUPLES_OK status
-    res = assert(c:exec([[
-        INSERT INTO test_tbl (str, num)
-        VALUES (
-            'foo', 123
-        ), (
-            'foo', 123
-        ) RETURNING id
-    ]]))
-    stat = assert(res:stat())
-    assert.contains(stat, {
-        status = libpq.RES_TUPLES_OK,
-        status_text = 'PGRES_TUPLES_OK',
-        cmd_status = 'INSERT 0 2',
-        cmd_tuples = 2,
-        nfields = 1,
-        ntuples = 2,
-        oid_value = 0,
-        fields = {
-            {
-                format = 0,
-                name = 'id',
-            },
-        },
-    })
-end
-
 function testcase.get_value()
     local c = assert(libpq.connect())
     local res = assert(c:exec([[
@@ -143,13 +88,12 @@ function testcase.get_value()
     res = assert(c:exec([[
         SELECT * FROM test_tbl
     ]]))
-    local stat = assert(res:stat())
-    assert.equal(stat.status, libpq.RES_TUPLES_OK)
+    assert.equal(res:status(), libpq.RES_TUPLES_OK)
 
     local rows = {}
-    for row = 1, stat.ntuples do
+    for row = 1, res:ntuples() do
         local line = {}
-        for col = 1, stat.nfields do
+        for col = 1, res:nfields() do
             if not res:get_is_null(row, col) then
                 local len = res:get_length(row, col)
                 local val = res:get_value(row, col)

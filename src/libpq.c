@@ -171,6 +171,7 @@ LUALIB_API int luaopen_libpq(lua_State *L)
     libpq_cancel_init(L);
     libpq_result_init(L);
     libpq_notify_init(L);
+    libpq_util_init(L);
 
     //
     // Option flags for PQcopyResult

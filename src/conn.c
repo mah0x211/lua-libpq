@@ -423,16 +423,20 @@ static int get_result_lua(lua_State *L)
 {
     PGconn *conn   = getconn(L);
     PGresult **res = libpq_result_new(L, 0);
+    char *errmsg   = NULL;
 
     *res = PQgetResult(conn);
     if (*res) {
         return 1;
     }
-
+    errmsg = PQerrorMessage(conn);
     // got error
-    lua_pushnil(L);
-    lua_pushstring(L, PQerrorMessage(conn));
-    return 2;
+    if (errmsg && *errmsg) {
+        lua_pushnil(L);
+        lua_pushstring(L, errmsg);
+        return 2;
+    }
+    return 0;
 }
 
 static int set_single_row_mode_lua(lua_State *L)
