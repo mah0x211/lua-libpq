@@ -23,6 +23,27 @@
 // lua
 #include "lua_libpq.h"
 
+static int get_result_rows_lua(lua_State *L)
+{
+    const PGresult *res = libpq_check_result(L);
+    int nrow            = PQntuples(res);
+    int ncol            = PQnfields(res);
+
+    lua_settop(L, 1);
+    lua_createtable(L, nrow, 0);
+    for (int row = 0; row < nrow; row++) {
+        lua_createtable(L, ncol, 0);
+        for (int col = 0; col < ncol; col++) {
+            if (!PQgetisnull(res, row, col)) {
+                lauxh_pushstr2arr(L, col + 1, PQgetvalue(res, row, col));
+            }
+        }
+        lua_rawseti(L, -2, row + 1);
+    }
+
+    return 1;
+}
+
 static int get_result_stat_lua(lua_State *L)
 {
     const PGresult *res   = libpq_check_result(L);
@@ -103,5 +124,6 @@ void libpq_util_init(lua_State *L)
 {
     lua_createtable(L, 0, 1);
     lauxh_pushfn2tbl(L, "get_result_stat", get_result_stat_lua);
+    lauxh_pushfn2tbl(L, "get_result_rows", get_result_rows_lua);
     lua_setfield(L, -2, "util");
 }

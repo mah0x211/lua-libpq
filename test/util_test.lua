@@ -56,3 +56,43 @@ function testcase.get_result_stat()
     })
 end
 
+function testcase.get_result_rows()
+    local c = assert(libpq.connect())
+    local res = assert(c:exec([[
+        CREATE TEMP TABLE test_tbl (
+            id serial,
+            str varchar,
+            num integer
+        )
+    ]]))
+    assert.equal(res:status(), libpq.RES_COMMAND_OK)
+    res = assert(c:exec([[
+        INSERT INTO test_tbl (str, num)
+        VALUES (
+            'foo', 101
+        ), (
+            'bar', 102
+        )
+    ]]))
+    assert.equal(res:status(), libpq.RES_COMMAND_OK)
+
+    -- test that get result rows
+    res = assert(c:exec([[
+        SELECT * FROM test_tbl
+    ]]))
+    assert.equal(res:status(), libpq.RES_TUPLES_OK)
+    local rows = libpq.util.get_result_rows(res)
+    assert.equal(rows, {
+        {
+            '1',
+            'foo',
+            '101',
+        },
+        {
+            '2',
+            'bar',
+            '102',
+        },
+    })
+end
+
