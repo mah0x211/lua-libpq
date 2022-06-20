@@ -109,11 +109,11 @@ function testcase.conninfo()
     assert.match(err, 'attempt to use a freed object')
 end
 
-function testcase.poll()
+function testcase.connect_poll()
     local c = assert(libpq.connect())
 
     -- test that return a POLLING_OK status
-    assert.equal(c:poll(), libpq.POLLING_OK)
+    assert.equal(c:connect_poll(), libpq.POLLING_OK)
 end
 
 function testcase.get_cancel()
@@ -519,7 +519,7 @@ function testcase.is_busy()
     assert.is_false(c:is_busy())
 
     -- test that true if query in process
-    assert(c:send_query('SELECT 1 + 2'))
+    assert(c:send_query('SELECT pg_sleep(1)'))
     assert.is_true(c:is_busy())
 end
 
