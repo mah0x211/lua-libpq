@@ -708,9 +708,9 @@ static int set_notice_processor_lua(lua_State *L)
 
 static int set_error_context_visibility_lua(lua_State *L)
 {
-    PGconn *conn     = getconn(L);
-    int show_context = lauxh_checkinteger(L, 2);
-    lua_pushinteger(L, PQsetErrorContextVisibility(conn, show_context));
+    PGconn *conn   = getconn(L);
+    int visibility = lauxh_checkinteger(L, 2);
+    lua_pushinteger(L, PQsetErrorContextVisibility(conn, visibility));
     return 1;
 }
 
@@ -936,7 +936,7 @@ static int get_cancel_lua(lua_State *L)
     return 2;
 }
 
-static int poll_lua(lua_State *L)
+static int connect_poll_lua(lua_State *L)
 {
     lua_pushinteger(L, PQconnectPoll(getconn(L)));
     return 1;
@@ -1100,7 +1100,7 @@ void libpq_conn_init(lua_State *L)
     struct luaL_Reg method[] = {
         {"finish",                       finish_lua                      },
         {"conninfo",                     conninfo_lua                    },
-        {"poll",                         poll_lua                        },
+        {"connect_poll",                 connect_poll_lua                },
         {"get_cancel",                   get_cancel_lua                  },
         {"request_cancel",               request_cancel_lua              },
         {"db",                           db_lua                          },
