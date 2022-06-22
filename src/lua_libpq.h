@@ -35,6 +35,7 @@
 #define LIBPQ_CONN_MT "libpq.conn"
 
 void libpq_conn_init(lua_State *L);
+PGconn *libpq_check_conn(lua_State *L);
 
 #define LIBPQ_CANCEL_MT "libpq.cancel"
 void libpq_cancel_init(lua_State *L);
@@ -42,7 +43,7 @@ PGcancel **libpq_cancel_new(lua_State *L);
 
 #define LIBPQ_RESULT_MT "libpq.result"
 void libpq_result_init(lua_State *L);
-PGresult **libpq_result_new(lua_State *L, int noclear);
+PGresult **libpq_result_new(lua_State *L, int conn_idx, int noclear);
 PGresult *libpq_check_result(lua_State *L);
 
 #define LIBPQ_NOTIFY_MT "libpq.notify"

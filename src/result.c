@@ -24,8 +24,9 @@
 #include "lua_libpq.h"
 
 typedef struct {
-    PGresult *res;
+    int ref_conn;
     int noclear;
+    PGresult *res;
 } result_t;
 
 PGresult *libpq_check_result(lua_State *L)
@@ -261,6 +262,7 @@ static inline int clear(lua_State *L)
 {
     result_t *r = luaL_checkudata(L, 1, LIBPQ_RESULT_MT);
 
+    r->ref_conn = lauxh_unref(L, r->ref_conn);
     if (!r->noclear && r->res) {
         PQclear(r->res);
         r->res = NULL;
@@ -284,11 +286,12 @@ static int tostring_lua(lua_State *L)
     return libpq_tostring(L, LIBPQ_RESULT_MT);
 }
 
-PGresult **libpq_result_new(lua_State *L, int noclear)
+PGresult **libpq_result_new(lua_State *L, int conn_idx, int noclear)
 {
     result_t *r = lua_newuserdata(L, sizeof(result_t));
-    r->res      = NULL;
+    r->ref_conn = lauxh_refat(L, conn_idx);
     r->noclear  = noclear;
+    r->res      = NULL;
     lauxh_setmetatable(L, LIBPQ_RESULT_MT);
     return &r->res;
 }
