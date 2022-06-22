@@ -19,6 +19,7 @@ function testcase.clear()
     assert.match(err, 'attempt to use a freed object')
 
     -- test that clear method can be called more than once
+    res:clear()
 end
 
 function testcase.get_attributes()

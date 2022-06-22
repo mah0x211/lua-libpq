@@ -42,7 +42,7 @@ static inline conn_t *checkself(lua_State *L)
     return c;
 }
 
-static inline PGconn *getconn(lua_State *L)
+PGconn *libpq_check_conn(lua_State *L)
 {
     conn_t *c = checkself(L);
     return c->conn;
@@ -50,7 +50,7 @@ static inline PGconn *getconn(lua_State *L)
 
 static int encrypt_password_conn_lua(lua_State *L)
 {
-    PGconn *conn          = getconn(L);
+    PGconn *conn          = libpq_check_conn(L);
     const char *passwd    = lauxh_checkstring(L, 2);
     const char *user      = lauxh_checkstring(L, 3);
     const char *algorithm = lauxh_optstring(L, 4, NULL);
@@ -70,7 +70,7 @@ static int encrypt_password_conn_lua(lua_State *L)
 
 static int escape_bytea_conn_lua(lua_State *L)
 {
-    PGconn *conn     = getconn(L);
+    PGconn *conn     = libpq_check_conn(L);
     size_t len       = 0;
     const char *from = lauxh_checklstring(L, 2, &len);
     unsigned char *to =
@@ -90,7 +90,7 @@ static int escape_bytea_conn_lua(lua_State *L)
 
 static int escape_identifier_lua(lua_State *L)
 {
-    PGconn *conn    = getconn(L);
+    PGconn *conn    = libpq_check_conn(L);
     size_t len      = 0;
     const char *str = lauxh_checklstring(L, 2, &len);
     char *to        = PQescapeIdentifier(conn, str, len);
@@ -109,7 +109,7 @@ static int escape_identifier_lua(lua_State *L)
 
 static int escape_literal_lua(lua_State *L)
 {
-    PGconn *conn    = getconn(L);
+    PGconn *conn    = libpq_check_conn(L);
     size_t len      = 0;
     const char *str = lauxh_checklstring(L, 2, &len);
     char *to        = PQescapeLiteral(conn, str, len);
@@ -128,7 +128,7 @@ static int escape_literal_lua(lua_State *L)
 
 static int escape_string_conn_lua(lua_State *L)
 {
-    PGconn *conn     = getconn(L);
+    PGconn *conn     = libpq_check_conn(L);
     size_t len       = 0;
     const char *from = lauxh_checklstring(L, 2, &len);
     // For safety the buffer at "to" must be at least 2*length + 1 bytes long.
@@ -151,9 +151,9 @@ static int escape_string_conn_lua(lua_State *L)
 /* Create and manipulate PGresults */
 static int make_empty_result_lua(lua_State *L)
 {
-    PGconn *conn   = getconn(L);
+    PGconn *conn   = libpq_check_conn(L);
     int status     = lauxh_optinteger(L, 2, PGRES_COMMAND_OK);
-    PGresult **res = libpq_result_new(L, 0);
+    PGresult **res = libpq_result_new(L, 1, 0);
 
     *res = PQmakeEmptyPGresult(conn, status);
     if (*res) {
@@ -174,7 +174,7 @@ static int make_empty_result_lua(lua_State *L)
 
 static int flush_lua(lua_State *L)
 {
-    PGconn *conn = getconn(L);
+    PGconn *conn = libpq_check_conn(L);
     switch (PQflush(conn)) {
     case 0:
         // done
@@ -197,14 +197,14 @@ static int flush_lua(lua_State *L)
 
 static int is_nonblocking_lua(lua_State *L)
 {
-    PGconn *conn = getconn(L);
+    PGconn *conn = libpq_check_conn(L);
     lua_pushboolean(L, PQisnonblocking(conn));
     return 1;
 }
 
 static int set_nonblocking_lua(lua_State *L)
 {
-    PGconn *conn = getconn(L);
+    PGconn *conn = libpq_check_conn(L);
     int enabled  = lauxh_checkboolean(L, 2);
 
     if (PQsetnonblocking(conn, enabled) != -1) {
@@ -227,7 +227,7 @@ static int set_nonblocking_lua(lua_State *L)
 
 static int get_copy_data_lua(lua_State *L)
 {
-    PGconn *conn = getconn(L);
+    PGconn *conn = libpq_check_conn(L);
     int async    = lauxh_optboolean(L, 2, 0);
     char *buffer = NULL;
     int nbytes   = PQgetCopyData(conn, &buffer, async);
@@ -258,7 +258,7 @@ static int get_copy_data_lua(lua_State *L)
 
 static int put_copy_end_lua(lua_State *L)
 {
-    PGconn *conn         = getconn(L);
+    PGconn *conn         = libpq_check_conn(L);
     const char *errormsg = lauxh_optstring(L, 2, NULL);
 
     switch (PQputCopyEnd(conn, errormsg)) {
@@ -282,7 +282,7 @@ static int put_copy_end_lua(lua_State *L)
 
 static int put_copy_data_lua(lua_State *L)
 {
-    PGconn *conn       = getconn(L);
+    PGconn *conn       = libpq_check_conn(L);
     size_t nbytes      = 0;
     const char *buffer = lauxh_checklstring(L, 2, &nbytes);
 
@@ -308,7 +308,7 @@ static int put_copy_data_lua(lua_State *L)
 
 static int notifies_lua(lua_State *L)
 {
-    PGconn *conn = getconn(L);
+    PGconn *conn = libpq_check_conn(L);
 
     if (PQconsumeInput(conn)) {
         PGnotify **notify = libpq_notify_new(L);
@@ -332,7 +332,7 @@ static int notifies_lua(lua_State *L)
 
 static int send_flush_request_lua(lua_State *L)
 {
-    PGconn *conn = getconn(L);
+    PGconn *conn = libpq_check_conn(L);
 
     if (PQsendFlushRequest(conn)) {
         lua_pushboolean(L, 1);
@@ -347,7 +347,7 @@ static int send_flush_request_lua(lua_State *L)
 
 static int pipeline_sync_lua(lua_State *L)
 {
-    PGconn *conn = getconn(L);
+    PGconn *conn = libpq_check_conn(L);
 
     if (PQpipelineSync(conn)) {
         lua_pushboolean(L, 1);
@@ -362,7 +362,7 @@ static int pipeline_sync_lua(lua_State *L)
 
 static int exit_pipeline_mode_lua(lua_State *L)
 {
-    PGconn *conn = getconn(L);
+    PGconn *conn = libpq_check_conn(L);
 
     if (PQexitPipelineMode(conn)) {
         lua_pushboolean(L, 1);
@@ -377,7 +377,7 @@ static int exit_pipeline_mode_lua(lua_State *L)
 
 static int enter_pipeline_mode_lua(lua_State *L)
 {
-    PGconn *conn = getconn(L);
+    PGconn *conn = libpq_check_conn(L);
 
     if (PQenterPipelineMode(conn)) {
         lua_pushboolean(L, 1);
@@ -392,7 +392,7 @@ static int enter_pipeline_mode_lua(lua_State *L)
 
 static int consume_input_lua(lua_State *L)
 {
-    PGconn *conn = getconn(L);
+    PGconn *conn = libpq_check_conn(L);
 
     if (PQconsumeInput(conn)) {
         lua_pushboolean(L, 1);
@@ -407,7 +407,7 @@ static int consume_input_lua(lua_State *L)
 
 static int is_busy_lua(lua_State *L)
 {
-    PGconn *conn = getconn(L);
+    PGconn *conn = libpq_check_conn(L);
 
     if (PQconsumeInput(conn)) {
         lua_pushboolean(L, PQisBusy(conn));
@@ -421,8 +421,8 @@ static int is_busy_lua(lua_State *L)
 
 static int get_result_lua(lua_State *L)
 {
-    PGconn *conn   = getconn(L);
-    PGresult **res = libpq_result_new(L, 0);
+    PGconn *conn   = libpq_check_conn(L);
+    PGresult **res = libpq_result_new(L, 1, 0);
     char *errmsg   = NULL;
 
     *res = PQgetResult(conn);
@@ -441,7 +441,7 @@ static int get_result_lua(lua_State *L)
 
 static int set_single_row_mode_lua(lua_State *L)
 {
-    PGconn *conn = getconn(L);
+    PGconn *conn = libpq_check_conn(L);
     lua_pushboolean(L, PQsetSingleRowMode(conn));
     return 1;
 }
@@ -449,7 +449,7 @@ static int set_single_row_mode_lua(lua_State *L)
 static int send_query_params_lua(lua_State *L)
 {
     int nparams         = lua_gettop(L) - 2;
-    PGconn *conn        = getconn(L);
+    PGconn *conn        = libpq_check_conn(L);
     const char *command = lauxh_checkstring(L, 2);
     const char **params = NULL;
 
@@ -474,7 +474,7 @@ static int send_query_params_lua(lua_State *L)
 
 static int send_query_lua(lua_State *L)
 {
-    PGconn *conn      = getconn(L);
+    PGconn *conn      = libpq_check_conn(L);
     const char *query = lauxh_checkstring(L, 2);
 
     if (PQsendQuery(conn, query)) {
@@ -491,7 +491,7 @@ static int send_query_lua(lua_State *L)
 static int exec_params_lua(lua_State *L)
 {
     int nparams         = lua_gettop(L) - 2;
-    PGconn *conn        = getconn(L);
+    PGconn *conn        = libpq_check_conn(L);
     const char *command = lauxh_checkstring(L, 2);
     const char **params = NULL;
     PGresult **res      = NULL;
@@ -503,7 +503,7 @@ static int exec_params_lua(lua_State *L)
         }
     }
 
-    res  = libpq_result_new(L, 0);
+    res  = libpq_result_new(L, 1, 0);
     *res = PQexecParams(conn, command, nparams, NULL, params, NULL, NULL, 0);
     if (*res) {
         return 1;
@@ -517,9 +517,9 @@ static int exec_params_lua(lua_State *L)
 
 static int exec_lua(lua_State *L)
 {
-    PGconn *conn        = getconn(L);
+    PGconn *conn        = libpq_check_conn(L);
     const char *command = lauxh_checkstring(L, 2);
-    PGresult **res      = libpq_result_new(L, 0);
+    PGresult **res      = libpq_result_new(L, 1, 0);
 
     *res = PQexec(conn, command);
     if (*res) {
@@ -534,7 +534,7 @@ static int exec_lua(lua_State *L)
 
 static int set_trace_flags_lua(lua_State *L)
 {
-    PGconn *conn = getconn(L);
+    PGconn *conn = libpq_check_conn(L);
     int flags    = lauxh_optflags(L, 2);
 
     PQsetTraceFlags(conn, flags);
@@ -635,20 +635,17 @@ static int notice_closure(lua_State *L)
     return 0;
 }
 
-static inline void push_notice_closure(lua_State *L, int idx)
+static inline void push_notice_closure(lua_State *L)
 {
-    int top = lua_gettop(L);
-    if (idx < 0) {
-        idx = top + idx + 1;
-    }
+    int argc = lua_gettop(L) - 2;
 
     // create closure function
-    luaL_checktype(L, idx, LUA_TFUNCTION);
+    luaL_checktype(L, 2, LUA_TFUNCTION);
     // The first argument sets the number of arguments, the second sets the lua
     // function, and the rest are used as function arguments.
-    lua_pushinteger(L, top - idx);
-    lua_insert(L, idx);
-    lua_pushcclosure(L, notice_closure, lua_gettop(L) - idx + 1);
+    lua_pushinteger(L, argc);
+    lua_insert(L, 2);
+    lua_pushcclosure(L, notice_closure, 2 + argc);
 }
 
 #define set_notice_closure(L, type, register_fn)                               \
@@ -661,7 +658,7 @@ static inline void push_notice_closure(lua_State *L, int idx)
                                                                                \
   if (!lua_isnoneornil((L), 2)) {                                              \
    /* push closure function */                                                 \
-   push_notice_closure((L), 2);                                                \
+   push_notice_closure((L));                                                   \
    c->notice_##type##_ref = lauxh_ref((L));                                    \
    if (c->default_##type == NULL) {                                            \
     /* set custom notice function */                                           \
@@ -680,7 +677,7 @@ static void notice_recv(void *arg, const PGresult *res)
 
     // call closure
     lauxh_pushref(c->L, c->notice_recv_ref);
-    *libpq_result_new(c->L, 1) = (PGresult *)res;
+    *libpq_result_new(c->L, 1, 1) = (PGresult *)res;
     lua_call(c->L, 1, 0);
 }
 
@@ -708,7 +705,7 @@ static int set_notice_processor_lua(lua_State *L)
 
 static int set_error_context_visibility_lua(lua_State *L)
 {
-    PGconn *conn   = getconn(L);
+    PGconn *conn   = libpq_check_conn(L);
     int visibility = lauxh_checkinteger(L, 2);
     lua_pushinteger(L, PQsetErrorContextVisibility(conn, visibility));
     return 1;
@@ -716,7 +713,7 @@ static int set_error_context_visibility_lua(lua_State *L)
 
 static int set_error_verbosity_lua(lua_State *L)
 {
-    PGconn *conn  = getconn(L);
+    PGconn *conn  = libpq_check_conn(L);
     int verbosity = lauxh_checkinteger(L, 2);
     lua_pushinteger(L, PQsetErrorVerbosity(conn, verbosity));
     return 1;
@@ -724,7 +721,7 @@ static int set_error_verbosity_lua(lua_State *L)
 
 static int ssl_attribute_names_lua(lua_State *L)
 {
-    PGconn *conn             = getconn(L);
+    PGconn *conn             = libpq_check_conn(L);
     const char *const *names = PQsslAttributeNames(conn);
     int i                    = 1;
 
@@ -739,7 +736,7 @@ static int ssl_attribute_names_lua(lua_State *L)
 
 static int ssl_attribute_lua(lua_State *L)
 {
-    PGconn *conn               = getconn(L);
+    PGconn *conn               = libpq_check_conn(L);
     const char *attribute_name = lauxh_checkstring(L, 2);
     lua_pushstring(L, PQsslAttribute(conn, attribute_name));
     return 1;
@@ -747,14 +744,14 @@ static int ssl_attribute_lua(lua_State *L)
 
 static int ssl_in_use_lua(lua_State *L)
 {
-    PGconn *conn = getconn(L);
+    PGconn *conn = libpq_check_conn(L);
     lua_pushboolean(L, PQsslInUse(conn));
     return 1;
 }
 
 static int set_client_encoding_lua(lua_State *L)
 {
-    PGconn *conn         = getconn(L);
+    PGconn *conn         = libpq_check_conn(L);
     const char *encoding = lauxh_checkstring(L, 2);
 
     if (PQsetClientEncoding(conn, encoding) == 0) {
@@ -770,49 +767,49 @@ static int set_client_encoding_lua(lua_State *L)
 
 static int client_encoding_lua(lua_State *L)
 {
-    PGconn *conn = getconn(L);
+    PGconn *conn = libpq_check_conn(L);
     lua_pushstring(L, pg_encoding_to_char(PQclientEncoding(conn)));
     return 1;
 }
 
 static int connection_used_password_lua(lua_State *L)
 {
-    PGconn *conn = getconn(L);
+    PGconn *conn = libpq_check_conn(L);
     lua_pushboolean(L, PQconnectionUsedPassword(conn));
     return 1;
 }
 
 static int connection_needs_password_lua(lua_State *L)
 {
-    PGconn *conn = getconn(L);
+    PGconn *conn = libpq_check_conn(L);
     lua_pushboolean(L, PQconnectionNeedsPassword(conn));
     return 1;
 }
 
 static int pipeline_status_lua(lua_State *L)
 {
-    PGconn *conn = getconn(L);
+    PGconn *conn = libpq_check_conn(L);
     lua_pushinteger(L, PQpipelineStatus(conn));
     return 1;
 }
 
 static int backend_pid_lua(lua_State *L)
 {
-    PGconn *conn = getconn(L);
+    PGconn *conn = libpq_check_conn(L);
     lua_pushinteger(L, PQbackendPID(conn));
     return 1;
 }
 
 static int socket_lua(lua_State *L)
 {
-    PGconn *conn = getconn(L);
+    PGconn *conn = libpq_check_conn(L);
     lua_pushinteger(L, PQsocket(conn));
     return 1;
 }
 
 static int error_message_lua(lua_State *L)
 {
-    PGconn *conn    = getconn(L);
+    PGconn *conn    = libpq_check_conn(L);
     const char *err = PQerrorMessage(conn);
 
     if (err && strlen(err)) {
@@ -825,21 +822,21 @@ static int error_message_lua(lua_State *L)
 
 static int server_version_lua(lua_State *L)
 {
-    PGconn *conn = getconn(L);
+    PGconn *conn = libpq_check_conn(L);
     lua_pushinteger(L, PQserverVersion(conn));
     return 1;
 }
 
 static int protocol_version_lua(lua_State *L)
 {
-    PGconn *conn = getconn(L);
+    PGconn *conn = libpq_check_conn(L);
     lua_pushinteger(L, PQprotocolVersion(conn));
     return 1;
 }
 
 static int parameter_status_lua(lua_State *L)
 {
-    PGconn *conn          = getconn(L);
+    PGconn *conn          = libpq_check_conn(L);
     const char *paramName = lauxh_optstring(L, 2, NULL);
     lua_pushstring(L, PQparameterStatus(conn, paramName));
     return 1;
@@ -847,72 +844,72 @@ static int parameter_status_lua(lua_State *L)
 
 static int transaction_status_lua(lua_State *L)
 {
-    PGconn *conn = getconn(L);
+    PGconn *conn = libpq_check_conn(L);
     lua_pushinteger(L, PQtransactionStatus(conn));
     return 1;
 }
 
 static int status_lua(lua_State *L)
 {
-    PGconn *conn = getconn(L);
+    PGconn *conn = libpq_check_conn(L);
     lua_pushinteger(L, PQstatus(conn));
     return 1;
 }
 
 static int options_lua(lua_State *L)
 {
-    PGconn *conn = getconn(L);
+    PGconn *conn = libpq_check_conn(L);
     lua_pushstring(L, PQoptions(conn));
     return 1;
 }
 
 static int port_lua(lua_State *L)
 {
-    PGconn *conn = getconn(L);
+    PGconn *conn = libpq_check_conn(L);
     lua_pushstring(L, PQport(conn));
     return 1;
 }
 
 static int hostaddr_lua(lua_State *L)
 {
-    PGconn *conn = getconn(L);
+    PGconn *conn = libpq_check_conn(L);
     lua_pushstring(L, PQhostaddr(conn));
     return 1;
 }
 
 static int host_lua(lua_State *L)
 {
-    PGconn *conn = getconn(L);
+    PGconn *conn = libpq_check_conn(L);
     lua_pushstring(L, PQhost(conn));
     return 1;
 }
 
 static int pass_lua(lua_State *L)
 {
-    PGconn *conn = getconn(L);
+    PGconn *conn = libpq_check_conn(L);
     lua_pushstring(L, PQpass(conn));
     return 1;
 }
 
 static int user_lua(lua_State *L)
 {
-    PGconn *conn = getconn(L);
+    PGconn *conn = libpq_check_conn(L);
     lua_pushstring(L, PQuser(conn));
     return 1;
 }
 
 static int db_lua(lua_State *L)
 {
-    PGconn *conn = getconn(L);
+    PGconn *conn = libpq_check_conn(L);
     lua_pushstring(L, PQdb(conn));
     return 1;
 }
 
 static int request_cancel_lua(lua_State *L)
 {
-    PGconn *conn = getconn(L);
+    PGconn *conn = libpq_check_conn(L);
 
-    if (PQrequestCancel(getconn(L))) {
+    if (PQrequestCancel(libpq_check_conn(L))) {
         lua_pushboolean(L, 1);
         return 1;
     }
@@ -927,7 +924,7 @@ static int get_cancel_lua(lua_State *L)
 {
     PGcancel **cancel = libpq_cancel_new(L);
 
-    *cancel = PQgetCancel(getconn(L));
+    *cancel = PQgetCancel(libpq_check_conn(L));
     if (*cancel) {
         return 1;
     }
@@ -938,7 +935,7 @@ static int get_cancel_lua(lua_State *L)
 
 static int connect_poll_lua(lua_State *L)
 {
-    lua_pushinteger(L, PQconnectPoll(getconn(L)));
+    lua_pushinteger(L, PQconnectPoll(libpq_check_conn(L)));
     return 1;
 }
 
@@ -975,7 +972,7 @@ static inline void push_conninfo_options(lua_State *L,
 
 static int conninfo_lua(lua_State *L)
 {
-    PQconninfoOption *options = PQconninfo(getconn(L));
+    PQconninfoOption *options = PQconninfo(libpq_check_conn(L));
 
     if (options) {
         push_conninfo_options(L, options);
