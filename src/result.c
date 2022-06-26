@@ -258,6 +258,13 @@ static int status_lua(lua_State *L)
     return 2;
 }
 
+static int connection_lua(lua_State *L)
+{
+    result_t *r = luaL_checkudata(L, 1, LIBPQ_RESULT_MT);
+    lauxh_pushref(L, r->ref_conn);
+    return 1;
+}
+
 static inline int clear(lua_State *L)
 {
     result_t *r = luaL_checkudata(L, 1, LIBPQ_RESULT_MT);
@@ -305,6 +312,7 @@ void libpq_result_init(lua_State *L)
     };
     struct luaL_Reg method[] = {
         {"clear",                 clear_lua                },
+        {"connection",            connection_lua           },
         {"status",                status_lua               },
         {"error_message",         error_message_lua        },
         {"verbose_error_message", verbose_error_message_lua},

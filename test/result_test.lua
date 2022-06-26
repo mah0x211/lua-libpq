@@ -22,6 +22,19 @@ function testcase.clear()
     res:clear()
 end
 
+function testcase.connection()
+    local c = assert(libpq.connect())
+    local res = assert(c:exec(''))
+    assert.equal(res:status(), libpq.RES_EMPTY_QUERY)
+
+    -- test that return a connection
+    assert.equal(res:connection(), c)
+
+    -- test that return a nil if result is cleared
+    res:clear()
+    assert.is_nil(res:connection())
+end
+
 function testcase.get_attributes()
     local c = assert(libpq.connect())
     local res = assert(c:exec([[
