@@ -72,7 +72,7 @@ end
 
 function testcase.ping()
     -- test that ping to server
-    assert.equal(libpq.ping(), libpq.PING_OK)
+    assert.equal(libpq.ping(), libpq.PQPING_OK)
 end
 
 function testcase.connect()
@@ -112,8 +112,8 @@ end
 function testcase.connect_poll()
     local c = assert(libpq.connect())
 
-    -- test that return a POLLING_OK status
-    assert.equal(c:connect_poll(), libpq.POLLING_OK)
+    -- test that return a PGRES_POLLING_OK status
+    assert.equal(c:connect_poll(), libpq.PGRES_POLLING_OK)
 end
 
 function testcase.get_cancel()
@@ -189,14 +189,14 @@ function testcase.status()
     local c = assert(libpq.connect())
 
     -- test that return status
-    assert.equal(c:status(), libpq.OK)
+    assert.equal(c:status(), libpq.CONNECTION_OK)
 end
 
 function testcase.transaction_status()
     local c = assert(libpq.connect())
 
     -- test that return transaction status
-    assert.equal(c:transaction_status(), libpq.TRANS_IDLE)
+    assert.equal(c:transaction_status(), libpq.PQTRANS_IDLE)
 end
 
 function testcase.parameter_status()
@@ -245,7 +245,7 @@ function testcase.pipeline_status()
     local c = assert(libpq.connect())
 
     -- test that return pipeline status
-    assert.equal(c:pipeline_status(), libpq.PIPELINE_OFF)
+    assert.equal(c:pipeline_status(), libpq.PQ_PIPELINE_OFF)
 end
 
 function testcase.connection_needs_password()
@@ -319,17 +319,18 @@ function testcase.set_error_verbosity()
     local c = assert(libpq.connect())
 
     -- test that set error verbosity and return previous verbosity settings
-    assert.is_int(c:set_error_verbosity(libpq.ERRORS_TERSE))
-    assert.equal(c:set_error_verbosity(libpq.ERRORS_DEFAULT), libpq.ERRORS_TERSE)
+    assert.is_int(c:set_error_verbosity(libpq.PQERRORS_TERSE))
+    assert.equal(c:set_error_verbosity(libpq.PQERRORS_DEFAULT),
+                 libpq.PQERRORS_TERSE)
 end
 
 function testcase.set_error_context_visibility()
     local c = assert(libpq.connect())
 
     -- test that set error verbosity and return previous verbosity settings
-    assert.is_int(c:set_error_context_visibility(libpq.SHOW_CONTEXT_NEVER))
-    assert.equal(c:set_error_context_visibility(libpq.SHOW_CONTEXT_ERRORS),
-                 libpq.SHOW_CONTEXT_NEVER)
+    assert.is_int(c:set_error_context_visibility(libpq.PQSHOW_CONTEXT_NEVER))
+    assert.equal(c:set_error_context_visibility(libpq.PQSHOW_CONTEXT_ERRORS),
+                 libpq.PQSHOW_CONTEXT_NEVER)
 end
 
 function testcase.set_notice_processor()
@@ -421,7 +422,8 @@ function testcase.set_trace_flags()
     c:trace(f)
 
     -- test that set flags
-    c:set_trace_flags(libpq.TRACE_SUPPRESS_TIMESTAMPS, libpq.TRACE_REGRESS_MODE)
+    c:set_trace_flags(libpq.PQTRACE_SUPPRESS_TIMESTAMPS,
+                      libpq.PQTRACE_REGRESS_MODE)
 
     -- test that throws an error if argument is not integer
     local err = assert.throws(c.set_trace_flags, c, {})
@@ -585,16 +587,16 @@ function testcase.notifies()
     local c = assert(libpq.connect())
     local listener = assert(libpq.connect())
     local res = assert(listener:exec('LISTEN hello'))
-    assert.equal(res:status(), libpq.RES_COMMAND_OK)
+    assert.equal(res:status(), libpq.PGRES_COMMAND_OK)
 
     -- test that return nil if no notification received
     assert.is_nil(listener:notifies())
 
     -- test that return notification
     assert(c:exec('NOTIFY hello'))
-    assert.equal(res:status(), libpq.RES_COMMAND_OK)
+    assert.equal(res:status(), libpq.PGRES_COMMAND_OK)
     assert(c:exec("NOTIFY hello, 'world'"))
-    assert.equal(res:status(), libpq.RES_COMMAND_OK)
+    assert.equal(res:status(), libpq.PGRES_COMMAND_OK)
     local i = 0
     while i < 2 do
         local notify, err = listener:notifies()
@@ -624,13 +626,13 @@ function testcase.put_copy_data()
             str varchar
         )
     ]]))
-    assert.equal(res:status(), libpq.RES_COMMAND_OK)
+    assert.equal(res:status(), libpq.PGRES_COMMAND_OK)
 
     -- test that copy data from stdin
     res = assert(c:exec([[
         COPY copy_test (str) FROM STDIN
         ]]))
-    assert.equal(res:status(), libpq.RES_COPY_IN)
+    assert.equal(res:status(), libpq.PGRES_COPY_IN)
     assert(c:put_copy_data(table.concat({
         'foo',
         'bar',
@@ -638,13 +640,13 @@ function testcase.put_copy_data()
     }, '\n')))
     assert(c:put_copy_end())
     res = assert(c:get_result())
-    assert.equal(res:status(), libpq.RES_COMMAND_OK)
+    assert.equal(res:status(), libpq.PGRES_COMMAND_OK)
 
     -- test that copy data from stdout
     res = assert(c:exec([[
         COPY copy_test TO STDOUT
     ]]))
-    assert.equal(res:status(), libpq.RES_COPY_OUT)
+    assert.equal(res:status(), libpq.PGRES_COPY_OUT)
     local rows = {}
     repeat
         local line, err, again = c:get_copy_data()

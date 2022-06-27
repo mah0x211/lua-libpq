@@ -15,7 +15,7 @@ function testcase.get_result_stat()
     local stat = assert(libpq.util.get_result_stat(res))
     assert.is_table(stat)
     assert.contains(stat, {
-        status = libpq.RES_COMMAND_OK,
+        status = libpq.PGRES_COMMAND_OK,
         status_text = 'PGRES_COMMAND_OK',
         cmd_status = 'CREATE TABLE',
     })
@@ -24,7 +24,7 @@ function testcase.get_result_stat()
     res = assert(c:exec(''))
     stat = assert(libpq.util.get_result_stat(res))
     assert.equal(stat, {
-        status = libpq.RES_EMPTY_QUERY,
+        status = libpq.PGRES_EMPTY_QUERY,
         status_text = 'PGRES_EMPTY_QUERY',
         cmd_status = '',
     })
@@ -40,7 +40,7 @@ function testcase.get_result_stat()
     ]]))
     stat = assert(libpq.util.get_result_stat(res))
     assert.contains(stat, {
-        status = libpq.RES_TUPLES_OK,
+        status = libpq.PGRES_TUPLES_OK,
         status_text = 'PGRES_TUPLES_OK',
         cmd_status = 'INSERT 0 2',
         cmd_tuples = 2,
@@ -65,7 +65,7 @@ function testcase.get_result_rows()
             num integer
         )
     ]]))
-    assert.equal(res:status(), libpq.RES_COMMAND_OK)
+    assert.equal(res:status(), libpq.PGRES_COMMAND_OK)
     res = assert(c:exec([[
         INSERT INTO test_tbl (str, num)
         VALUES (
@@ -74,13 +74,13 @@ function testcase.get_result_rows()
             'bar', 102
         )
     ]]))
-    assert.equal(res:status(), libpq.RES_COMMAND_OK)
+    assert.equal(res:status(), libpq.PGRES_COMMAND_OK)
 
     -- test that get result rows
     res = assert(c:exec([[
         SELECT * FROM test_tbl
     ]]))
-    assert.equal(res:status(), libpq.RES_TUPLES_OK)
+    assert.equal(res:status(), libpq.PGRES_TUPLES_OK)
     local rows = libpq.util.get_result_rows(res)
     assert.equal(rows, {
         {
@@ -105,7 +105,7 @@ function testcase.iterate_result_rows()
             num integer
         )
     ]]))
-    assert.equal(res:status(), libpq.RES_COMMAND_OK)
+    assert.equal(res:status(), libpq.PGRES_COMMAND_OK)
 
     -- test that no rows
     res = assert(c:exec([[
@@ -116,7 +116,7 @@ function testcase.iterate_result_rows()
             'bar', 102
         )
     ]]))
-    assert.equal(res:status(), libpq.RES_COMMAND_OK)
+    assert.equal(res:status(), libpq.PGRES_COMMAND_OK)
     local rows = {}
     for n, row in libpq.util.iterate_result_rows(res) do
         rows[n] = row
@@ -127,43 +127,11 @@ function testcase.iterate_result_rows()
     res = assert(c:exec([[
         SELECT * FROM test_tbl
     ]]))
-    assert.equal(res:status(), libpq.RES_TUPLES_OK)
+    assert.equal(res:status(), libpq.PGRES_TUPLES_OK)
     rows = {}
     for n, row in libpq.util.iterate_result_rows(res) do
         rows[n] = row
     end
-    assert.equal(rows, {
-        {
-            '1',
-            'foo',
-            '101',
-        },
-        {
-            '2',
-            'bar',
-            '102',
-        },
-    })
-
-    -- test that iterates the result rows in single row mode
-    assert(c:send_query([[
-        SELECT * FROM test_tbl
-    ]]))
-    assert(c:set_single_row_mode())
-    rows = {}
-    local err
-    res, err = c:get_result()
-    while res do
-        for _, row in libpq.util.iterate_result_rows(res) do
-            rows[#rows + 1] = row
-        end
-
-        res, err = c:get_result()
-    end
-    if err then
-        error(err)
-    end
-
     assert.equal(rows, {
         {
             '1',
@@ -187,7 +155,7 @@ function testcase.iterate_result_rows_in_single_row_mode()
             num integer
         )
     ]]))
-    assert.equal(res:status(), libpq.RES_COMMAND_OK)
+    assert.equal(res:status(), libpq.PGRES_COMMAND_OK)
     res = assert(c:exec([[
         INSERT INTO test_tbl (str, num)
         VALUES (
@@ -196,7 +164,7 @@ function testcase.iterate_result_rows_in_single_row_mode()
             'bar', 102
         )
     ]]))
-    assert.equal(res:status(), libpq.RES_COMMAND_OK)
+    assert.equal(res:status(), libpq.PGRES_COMMAND_OK)
 
     -- test that iterates the result rows in single row mode
     assert(c:send_query([[

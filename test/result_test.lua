@@ -10,7 +10,7 @@ function testcase.clear()
             num integer
         )
     ]]))
-    assert.equal(res:status(), libpq.RES_COMMAND_OK)
+    assert.equal(res:status(), libpq.PGRES_COMMAND_OK)
 
     -- test that clear result
     res:clear()
@@ -25,7 +25,7 @@ end
 function testcase.connection()
     local c = assert(libpq.connect())
     local res = assert(c:exec(''))
-    assert.equal(res:status(), libpq.RES_EMPTY_QUERY)
+    assert.equal(res:status(), libpq.PGRES_EMPTY_QUERY)
 
     -- test that return a connection
     assert.equal(res:connection(), c)
@@ -44,7 +44,7 @@ function testcase.get_attributes()
             num integer
         )
     ]]))
-    assert.equal(res:status(), libpq.RES_COMMAND_OK)
+    assert.equal(res:status(), libpq.PGRES_COMMAND_OK)
 
     res = assert(c:exec([[
         INSERT INTO copy_test (str, num)
@@ -56,7 +56,7 @@ function testcase.get_attributes()
     assert.equal({
         res:status(),
     }, {
-        libpq.RES_TUPLES_OK,
+        libpq.PGRES_TUPLES_OK,
         'PGRES_TUPLES_OK',
     })
     assert.equal(res:error_message(), '')
@@ -87,7 +87,7 @@ function testcase.get_value()
             num integer
         )
     ]]))
-    assert.equal(res:status(), libpq.RES_COMMAND_OK)
+    assert.equal(res:status(), libpq.PGRES_COMMAND_OK)
     res = assert(c:exec([[
         INSERT INTO test_tbl (str, num)
         VALUES (
@@ -96,13 +96,13 @@ function testcase.get_value()
             'bar', 102
         )
     ]]))
-    assert.equal(res:status(), libpq.RES_COMMAND_OK)
+    assert.equal(res:status(), libpq.PGRES_COMMAND_OK)
 
     -- test that get value of each row
     res = assert(c:exec([[
         SELECT * FROM test_tbl
     ]]))
-    assert.equal(res:status(), libpq.RES_TUPLES_OK)
+    assert.equal(res:status(), libpq.PGRES_TUPLES_OK)
 
     local rows = {}
     for row = 1, res:ntuples() do
