@@ -176,166 +176,170 @@ LUALIB_API int luaopen_libpq(lua_State *L)
     //
     // Option flags for PQcopyResult
     //
-    lauxh_pushint2tbl(L, "COPYRES_ATTRS", PG_COPYRES_ATTRS);
-    /* Implies PG_COPYRES_ATTRS */
-    lauxh_pushint2tbl(L, "COPYRES_TUPLES", PG_COPYRES_TUPLES);
-    lauxh_pushint2tbl(L, "COPYRES_EVENTS", PG_COPYRES_EVENTS);
-    lauxh_pushint2tbl(L, "COPYRES_NOTICEHOOKS", PG_COPYRES_NOTICEHOOKS);
+    lauxh_pushint2tbl(L, "PG_COPYRES_ATTRS", PG_COPYRES_ATTRS);
+    // Implies PG_COPYRES_ATTRS
+    lauxh_pushint2tbl(L, "PG_COPYRES_TUPLES", PG_COPYRES_TUPLES);
+    lauxh_pushint2tbl(L, "PG_COPYRES_EVENTS", PG_COPYRES_EVENTS);
+    lauxh_pushint2tbl(L, "PG_COPYRES_NOTICEHOOKS", PG_COPYRES_NOTICEHOOKS);
 
     // ConnStatusType
-    lauxh_pushint2tbl(L, "OK", CONNECTION_OK);
-    lauxh_pushint2tbl(L, "BAD", CONNECTION_BAD);
+    lauxh_pushint2tbl(L, "CONNECTION_OK", CONNECTION_OK);
+    lauxh_pushint2tbl(L, "CONNECTION_BAD", CONNECTION_BAD);
     /* Non-blocking mode only below here */
     /*
      * The existence of these should never be relied upon - they should only
      * be used for user feedback or similar purposes.
      */
     // Waiting for connection to be made.
-    lauxh_pushint2tbl(L, "STARTED", CONNECTION_STARTED);
+    lauxh_pushint2tbl(L, "CONNECTION_STARTED", CONNECTION_STARTED);
     // Connection OK; waiting to send.
-    lauxh_pushint2tbl(L, "MADE", CONNECTION_MADE);
+    lauxh_pushint2tbl(L, "CONNECTION_MADE", CONNECTION_MADE);
     // Waiting for a response from the postmaster.
-    lauxh_pushint2tbl(L, "AWAITING_RESPONSE", CONNECTION_AWAITING_RESPONSE);
+    lauxh_pushint2tbl(L, "CONNECTION_AWAITING_RESPONSE",
+                      CONNECTION_AWAITING_RESPONSE);
     // Received authentication; waiting for backend startup.
-    lauxh_pushint2tbl(L, "AUTH_OK", CONNECTION_AUTH_OK);
+    lauxh_pushint2tbl(L, "CONNECTION_AUTH_OK", CONNECTION_AUTH_OK);
     // This state is no longer used.
-    lauxh_pushint2tbl(L, "SETENV", CONNECTION_SETENV);
+    lauxh_pushint2tbl(L, "CONNECTION_SETENV", CONNECTION_SETENV);
     // Negotiating SSL.
-    lauxh_pushint2tbl(L, "SSL_STARTUP", CONNECTION_SSL_STARTUP);
+    lauxh_pushint2tbl(L, "CONNECTION_SSL_STARTUP", CONNECTION_SSL_STARTUP);
     // Internal state: connect() needed
-    lauxh_pushint2tbl(L, "NEEDED", CONNECTION_NEEDED);
+    lauxh_pushint2tbl(L, "CONNECTION_NEEDED", CONNECTION_NEEDED);
     // Checking if session is read-write.
-    lauxh_pushint2tbl(L, "CHECK_WRITABLE", CONNECTION_CHECK_WRITABLE);
+    lauxh_pushint2tbl(L, "CONNECTION_CHECK_WRITABLE",
+                      CONNECTION_CHECK_WRITABLE);
     // Consuming any extra messages.
-    lauxh_pushint2tbl(L, "CONSUME", CONNECTION_CONSUME);
+    lauxh_pushint2tbl(L, "CONNECTION_CONSUME", CONNECTION_CONSUME);
     // Negotiating GSSAPI.
-    lauxh_pushint2tbl(L, "GSS_STARTUP", CONNECTION_GSS_STARTUP);
+    lauxh_pushint2tbl(L, "CONNECTION_GSS_STARTUP", CONNECTION_GSS_STARTUP);
     // Checking target server properties.
-    lauxh_pushint2tbl(L, "CHECK_TARGET", CONNECTION_CHECK_TARGET);
+    lauxh_pushint2tbl(L, "CONNECTION_CHECK_TARGET", CONNECTION_CHECK_TARGET);
     // Checking if server is in standby mode.
-    lauxh_pushint2tbl(L, "CHECK_STANDBY", CONNECTION_CHECK_STANDBY);
+    lauxh_pushint2tbl(L, "CONNECTION_CHECK_STANDBY", CONNECTION_CHECK_STANDBY);
 
     // PostgresPollingStatusType;
-    lauxh_pushint2tbl(L, "POLLING_FAILED", PGRES_POLLING_FAILED);
+    lauxh_pushint2tbl(L, "PGRES_POLLING_FAILED", PGRES_POLLING_FAILED);
     // These two indicate that one may
-    lauxh_pushint2tbl(L, "POLLING_READING", PGRES_POLLING_READING);
+    lauxh_pushint2tbl(L, "PGRES_POLLING_READING", PGRES_POLLING_READING);
     // use select before polling again.
-    lauxh_pushint2tbl(L, "POLLING_WRITING", PGRES_POLLING_WRITING);
-    lauxh_pushint2tbl(L, "POLLING_OK", PGRES_POLLING_OK);
+    lauxh_pushint2tbl(L, "PGRES_POLLING_WRITING", PGRES_POLLING_WRITING);
+    lauxh_pushint2tbl(L, "PGRES_POLLING_OK", PGRES_POLLING_OK);
     // unused; keep for awhile for backwards compatibility
-    lauxh_pushint2tbl(L, "POLLING_ACTIVE", PGRES_POLLING_ACTIVE);
+    lauxh_pushint2tbl(L, "PGRES_POLLING_ACTIVE", PGRES_POLLING_ACTIVE);
 
     // ExecStatusType;
     /* empty query string was executed */
-    lauxh_pushint2tbl(L, "RES_EMPTY_QUERY", PGRES_EMPTY_QUERY);
+    lauxh_pushint2tbl(L, "PGRES_EMPTY_QUERY", PGRES_EMPTY_QUERY);
     // a query command that doesn't return
     // anything was executed properly by the
     // backend
-    lauxh_pushint2tbl(L, "RES_COMMAND_OK", PGRES_COMMAND_OK);
+    lauxh_pushint2tbl(L, "PGRES_COMMAND_OK", PGRES_COMMAND_OK);
     // a query command that returns tuples was
     // executed properly by the backend, PGresult
     // contains the result tuples
-    lauxh_pushint2tbl(L, "RES_TUPLES_OK", PGRES_TUPLES_OK);
+    lauxh_pushint2tbl(L, "PGRES_TUPLES_OK", PGRES_TUPLES_OK);
     // Copy Out data transfer in progress
-    lauxh_pushint2tbl(L, "RES_COPY_OUT", PGRES_COPY_OUT);
+    lauxh_pushint2tbl(L, "PGRES_COPY_OUT", PGRES_COPY_OUT);
     // Copy In data transfer in progress
-    lauxh_pushint2tbl(L, "RES_COPY_IN", PGRES_COPY_IN);
+    lauxh_pushint2tbl(L, "PGRES_COPY_IN", PGRES_COPY_IN);
     // an unexpected response was recv'd from the backend
-    lauxh_pushint2tbl(L, "RES_BAD_RESPONSE", PGRES_BAD_RESPONSE);
+    lauxh_pushint2tbl(L, "PGRES_BAD_RESPONSE", PGRES_BAD_RESPONSE);
     // notice or warning message
-    lauxh_pushint2tbl(L, "RES_NONFATAL_ERROR", PGRES_NONFATAL_ERROR);
+    lauxh_pushint2tbl(L, "PGRES_NONFATAL_ERROR", PGRES_NONFATAL_ERROR);
     // query failed
-    lauxh_pushint2tbl(L, "RES_FATAL_ERROR", PGRES_FATAL_ERROR);
+    lauxh_pushint2tbl(L, "PGRES_FATAL_ERROR", PGRES_FATAL_ERROR);
     // Copy In/Out data transfer in progress
-    lauxh_pushint2tbl(L, "RES_COPY_BOTH", PGRES_COPY_BOTH);
+    lauxh_pushint2tbl(L, "PGRES_COPY_BOTH", PGRES_COPY_BOTH);
     // single tuple from larger resultset
-    lauxh_pushint2tbl(L, "RES_SINGLE_TUPLE", PGRES_SINGLE_TUPLE);
+    lauxh_pushint2tbl(L, "PGRES_SINGLE_TUPLE", PGRES_SINGLE_TUPLE);
     // pipeline synchronization point
-    lauxh_pushint2tbl(L, "RES_PIPELINE_SYNC", PGRES_PIPELINE_SYNC);
+    lauxh_pushint2tbl(L, "PGRES_PIPELINE_SYNC", PGRES_PIPELINE_SYNC);
     // Command didn't run because of an abort earlier in a pipeline
-    lauxh_pushint2tbl(L, "RES_PIPELINE_ABORTED", PGRES_PIPELINE_ABORTED);
+    lauxh_pushint2tbl(L, "PGRES_PIPELINE_ABORTED", PGRES_PIPELINE_ABORTED);
 
     // PGTransactionStatusType
     // connection idle
-    lauxh_pushint2tbl(L, "TRANS_IDLE", PQTRANS_IDLE);
+    lauxh_pushint2tbl(L, "PQTRANS_IDLE", PQTRANS_IDLE);
     // command in progress
-    lauxh_pushint2tbl(L, "TRANS_ACTIVE", PQTRANS_ACTIVE);
+    lauxh_pushint2tbl(L, "PQTRANS_ACTIVE", PQTRANS_ACTIVE);
     // idle, within transaction block
-    lauxh_pushint2tbl(L, "TRANS_INTRANS", PQTRANS_INTRANS);
+    lauxh_pushint2tbl(L, "PQTRANS_INTRANS", PQTRANS_INTRANS);
     // idle, within failed transaction
-    lauxh_pushint2tbl(L, "TRANS_INERROR", PQTRANS_INERROR);
+    lauxh_pushint2tbl(L, "PQTRANS_INERROR", PQTRANS_INERROR);
     // cannot determine status
-    lauxh_pushint2tbl(L, "TRANS_UNKNOWN", PQTRANS_UNKNOWN);
+    lauxh_pushint2tbl(L, "PQTRANS_UNKNOWN", PQTRANS_UNKNOWN);
 
     // PGVerbosity
     // single-line error messages
-    lauxh_pushint2tbl(L, "ERRORS_TERSE", PQERRORS_TERSE);
+    lauxh_pushint2tbl(L, "PQERRORS_TERSE", PQERRORS_TERSE);
     // recommended style
-    lauxh_pushint2tbl(L, "ERRORS_DEFAULT", PQERRORS_DEFAULT);
+    lauxh_pushint2tbl(L, "PQERRORS_DEFAULT", PQERRORS_DEFAULT);
     // all the facts, ma'am
-    lauxh_pushint2tbl(L, "ERRORS_VERBOSE", PQERRORS_VERBOSE);
+    lauxh_pushint2tbl(L, "PQERRORS_VERBOSE", PQERRORS_VERBOSE);
     // only error severity and SQLSTATE code
-    lauxh_pushint2tbl(L, "ERRORS_SQLSTATE", PQERRORS_SQLSTATE);
+    lauxh_pushint2tbl(L, "PQERRORS_SQLSTATE", PQERRORS_SQLSTATE);
 
     // PGContextVisibility
     // never show CONTEXT field
-    lauxh_pushint2tbl(L, "SHOW_CONTEXT_NEVER", PQSHOW_CONTEXT_NEVER);
+    lauxh_pushint2tbl(L, "PQSHOW_CONTEXT_NEVER", PQSHOW_CONTEXT_NEVER);
     // show CONTEXT for errors only (default)
-    lauxh_pushint2tbl(L, "SHOW_CONTEXT_ERRORS", PQSHOW_CONTEXT_ERRORS);
+    lauxh_pushint2tbl(L, "PQSHOW_CONTEXT_ERRORS", PQSHOW_CONTEXT_ERRORS);
     // always show CONTEXT field
-    lauxh_pushint2tbl(L, "SHOW_CONTEXT_ALWAYS", PQSHOW_CONTEXT_ALWAYS);
+    lauxh_pushint2tbl(L, "PQSHOW_CONTEXT_ALWAYS", PQSHOW_CONTEXT_ALWAYS);
 
     // PGPing
     // server is accepting connections
-    lauxh_pushint2tbl(L, "PING_OK", PQPING_OK);
+    lauxh_pushint2tbl(L, "PQPING_OK", PQPING_OK);
     // server is alive but rejecting connections
-    lauxh_pushint2tbl(L, "PING_REJECT", PQPING_REJECT);
+    lauxh_pushint2tbl(L, "PQPING_REJECT", PQPING_REJECT);
     // could not establish connection
-    lauxh_pushint2tbl(L, "PING_NO_RESPONSE", PQPING_NO_RESPONSE);
+    lauxh_pushint2tbl(L, "PQPING_NO_RESPONSE", PQPING_NO_RESPONSE);
     // connection not attempted (bad params)
-    lauxh_pushint2tbl(L, "PING_NO_ATTEMPT", PQPING_NO_ATTEMPT);
+    lauxh_pushint2tbl(L, "PQPING_NO_ATTEMPT", PQPING_NO_ATTEMPT);
 
     /*
      * PGpipelineStatus - Current status of pipeline mode
      */
     // PGpipelineStatus;
-    lauxh_pushint2tbl(L, "PIPELINE_OFF", PQ_PIPELINE_OFF);
-    lauxh_pushint2tbl(L, "PIPELINE_ON", PQ_PIPELINE_ON);
-    lauxh_pushint2tbl(L, "PIPELINE_ABORTED", PQ_PIPELINE_ABORTED);
+    lauxh_pushint2tbl(L, "PQ_PIPELINE_OFF", PQ_PIPELINE_OFF);
+    lauxh_pushint2tbl(L, "PQ_PIPELINE_ON", PQ_PIPELINE_ON);
+    lauxh_pushint2tbl(L, "PQ_PIPELINE_ABORTED", PQ_PIPELINE_ABORTED);
 
     // flags controlling trace output:
     // omit timestamps from each line
-    lauxh_pushint2tbl(L, "TRACE_SUPPRESS_TIMESTAMPS",
+    lauxh_pushint2tbl(L, "PQTRACE_SUPPRESS_TIMESTAMPS",
                       PQTRACE_SUPPRESS_TIMESTAMPS);
     // redact portions of some messages, for testing frameworks
-    lauxh_pushint2tbl(L, "TRACE_REGRESS_MODE", PQTRACE_REGRESS_MODE);
+    lauxh_pushint2tbl(L, "PQTRACE_REGRESS_MODE", PQTRACE_REGRESS_MODE);
 
     // Interface for multiple-result or asynchronous queries
-    lauxh_pushint2tbl(L, "QUERY_PARAM_MAX_LIMIT", PQ_QUERY_PARAM_MAX_LIMIT);
+    lauxh_pushint2tbl(L, "PQ_QUERY_PARAM_MAX_LIMIT", PQ_QUERY_PARAM_MAX_LIMIT);
 
     //
     // Identifiers of error message fields.  Kept here to keep common
     // between frontend and backend, and also to export them to libpq
     // applications.
     //
-    lauxh_pushint2tbl(L, "DIAG_SEVERITY", PG_DIAG_SEVERITY);
-    lauxh_pushint2tbl(L, "DIAG_SEVERITY_NONLOCALIZED",
+    lauxh_pushint2tbl(L, "PG_DIAG_SEVERITY", PG_DIAG_SEVERITY);
+    lauxh_pushint2tbl(L, "PG_DIAG_SEVERITY_NONLOCALIZED",
                       PG_DIAG_SEVERITY_NONLOCALIZED);
-    lauxh_pushint2tbl(L, "DIAG_SQLSTATE", PG_DIAG_SQLSTATE);
-    lauxh_pushint2tbl(L, "DIAG_MESSAGE_PRIMARY", PG_DIAG_MESSAGE_PRIMARY);
-    lauxh_pushint2tbl(L, "DIAG_MESSAGE_DETAIL", PG_DIAG_MESSAGE_DETAIL);
-    lauxh_pushint2tbl(L, "DIAG_MESSAGE_HINT", PG_DIAG_MESSAGE_HINT);
-    lauxh_pushint2tbl(L, "DIAG_STATEMENT_POSITION", PG_DIAG_STATEMENT_POSITION);
-    lauxh_pushint2tbl(L, "DIAG_INTERNAL_POSITION", PG_DIAG_INTERNAL_POSITION);
-    lauxh_pushint2tbl(L, "DIAG_INTERNAL_QUERY", PG_DIAG_INTERNAL_QUERY);
-    lauxh_pushint2tbl(L, "DIAG_CONTEXT", PG_DIAG_CONTEXT);
-    lauxh_pushint2tbl(L, "DIAG_SCHEMA_NAME", PG_DIAG_SCHEMA_NAME);
-    lauxh_pushint2tbl(L, "DIAG_TABLE_NAME", PG_DIAG_TABLE_NAME);
-    lauxh_pushint2tbl(L, "DIAG_COLUMN_NAME", PG_DIAG_COLUMN_NAME);
-    lauxh_pushint2tbl(L, "DIAG_DATATYPE_NAME", PG_DIAG_DATATYPE_NAME);
-    lauxh_pushint2tbl(L, "DIAG_CONSTRAINT_NAME", PG_DIAG_CONSTRAINT_NAME);
-    lauxh_pushint2tbl(L, "DIAG_SOURCE_FILE", PG_DIAG_SOURCE_FILE);
-    lauxh_pushint2tbl(L, "DIAG_SOURCE_LINE", PG_DIAG_SOURCE_LINE);
-    lauxh_pushint2tbl(L, "DIAG_SOURCE_FUNCTION", PG_DIAG_SOURCE_FUNCTION);
+    lauxh_pushint2tbl(L, "PG_DIAG_SQLSTATE", PG_DIAG_SQLSTATE);
+    lauxh_pushint2tbl(L, "PG_DIAG_MESSAGE_PRIMARY", PG_DIAG_MESSAGE_PRIMARY);
+    lauxh_pushint2tbl(L, "PG_DIAG_MESSAGE_DETAIL", PG_DIAG_MESSAGE_DETAIL);
+    lauxh_pushint2tbl(L, "PG_DIAG_MESSAGE_HINT", PG_DIAG_MESSAGE_HINT);
+    lauxh_pushint2tbl(L, "PG_DIAG_STATEMENT_POSITION",
+                      PG_DIAG_STATEMENT_POSITION);
+    lauxh_pushint2tbl(L, "PG_DIAG_INTERNAL_POSITION",
+                      PG_DIAG_INTERNAL_POSITION);
+    lauxh_pushint2tbl(L, "PG_DIAG_INTERNAL_QUERY", PG_DIAG_INTERNAL_QUERY);
+    lauxh_pushint2tbl(L, "PG_DIAG_CONTEXT", PG_DIAG_CONTEXT);
+    lauxh_pushint2tbl(L, "PG_DIAG_SCHEMA_NAME", PG_DIAG_SCHEMA_NAME);
+    lauxh_pushint2tbl(L, "PG_DIAG_TABLE_NAME", PG_DIAG_TABLE_NAME);
+    lauxh_pushint2tbl(L, "PG_DIAG_COLUMN_NAME", PG_DIAG_COLUMN_NAME);
+    lauxh_pushint2tbl(L, "PG_DIAG_DATATYPE_NAME", PG_DIAG_DATATYPE_NAME);
+    lauxh_pushint2tbl(L, "PG_DIAG_CONSTRAINT_NAME", PG_DIAG_CONSTRAINT_NAME);
+    lauxh_pushint2tbl(L, "PG_DIAG_SOURCE_FILE", PG_DIAG_SOURCE_FILE);
+    lauxh_pushint2tbl(L, "PG_DIAG_SOURCE_LINE", PG_DIAG_SOURCE_LINE);
+    lauxh_pushint2tbl(L, "PG_DIAG_SOURCE_FUNCTION", PG_DIAG_SOURCE_FUNCTION);
     return 1;
 }
