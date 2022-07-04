@@ -108,14 +108,19 @@ static int get_result_stat_lua(lua_State *L)
             lauxh_pushint2tbl(L, "binary_tuples", PQbinaryTuples(res));
             lua_createtable(L, nfields, 0);
             for (int col = 0; col < nfields; col++) {
+                char *fname = PQfname(res, col);
                 lua_createtable(L, 0, 7);
-                lauxh_pushstr2tbl(L, "name", PQfname(res, col));
+                lauxh_pushstr2tbl(L, "name", fname);
                 lauxh_pushint2tbl(L, "table", PQftable(res, col));
                 lauxh_pushint2tbl(L, "tablecol", PQftablecol(res, col));
                 lauxh_pushint2tbl(L, "format", PQfformat(res, col));
                 lauxh_pushint2tbl(L, "type", PQftype(res, col));
                 lauxh_pushint2tbl(L, "size", PQfsize(res, col));
                 lauxh_pushint2tbl(L, "mod", PQfmod(res, col));
+                // index by column name
+                lua_pushvalue(L, -1);
+                lua_setfield(L, -3, fname);
+                // index by column number
                 lua_rawseti(L, -2, col + 1);
             }
             lua_setfield(L, -2, "fields");

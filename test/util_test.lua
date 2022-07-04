@@ -52,6 +52,10 @@ function testcase.get_result_stat()
                 format = 0,
                 name = 'id',
             },
+            id = {
+                format = 0,
+                name = 'id',
+            },
         },
     })
 end
