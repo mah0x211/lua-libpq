@@ -126,6 +126,7 @@ static inline uintmax_t libpq_str2uint(char *str)
     if (*str) {
         return strtoumax(str, NULL, 10);
     }
+    errno = ERANGE;
     return UINTMAX_MAX;
 }
 
