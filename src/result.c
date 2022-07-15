@@ -243,9 +243,13 @@ static int verbose_error_message_lua(lua_State *L)
 static int error_message_lua(lua_State *L)
 {
     const PGresult *res = libpq_check_result(L);
+    char *err           = PQresultErrorMessage(res);
 
-    lua_pushstring(L, PQresultErrorMessage(res));
-    return 1;
+    if (err && *err) {
+        lua_pushstring(L, err);
+        return 1;
+    }
+    return 0;
 }
 
 static int status_lua(lua_State *L)
