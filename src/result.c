@@ -92,10 +92,12 @@ static int cmd_tuples_lua(lua_State *L)
 
     if (cmd_tuples != UINTMAX_MAX) {
         lua_pushinteger(L, cmd_tuples);
-    } else {
-        lua_pushnil(L);
+        return 1;
     }
-    return 1;
+    // got error
+    lua_pushnil(L);
+    lua_errno_new(L, errno, "cmd_tuples");
+    return 2;
 }
 
 static int oid_value_lua(lua_State *L)
