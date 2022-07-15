@@ -809,15 +809,14 @@ static int socket_lua(lua_State *L)
 
 static int error_message_lua(lua_State *L)
 {
-    PGconn *conn    = libpq_check_conn(L);
-    const char *err = PQerrorMessage(conn);
+    PGconn *conn = libpq_check_conn(L);
+    char *err    = PQerrorMessage(conn);
 
-    if (err && strlen(err)) {
+    if (err && *err) {
         lua_pushstring(L, PQerrorMessage(conn));
-    } else {
-        lua_pushnil(L);
+        return 1;
     }
-    return 1;
+    return 0;
 }
 
 static int server_version_lua(lua_State *L)

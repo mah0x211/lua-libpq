@@ -59,7 +59,7 @@ function testcase.get_attributes()
         libpq.PGRES_TUPLES_OK,
         'PGRES_TUPLES_OK',
     })
-    assert.equal(res:error_message(), '')
+    assert.is_nil(res:error_message())
     assert.match(res:verbose_error_message(), 'PGresult is not an error result')
     assert.equal(res:ntuples(), 1)
     assert.equal(res:nfields(), 1)
