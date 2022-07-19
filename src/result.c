@@ -81,7 +81,11 @@ static int get_value_lua(lua_State *L)
     int row             = lauxh_checkpinteger(L, 2) - 1;
     int col             = lauxh_checkpinteger(L, 3) - 1;
 
-    lua_pushstring(L, PQgetvalue(res, row, col));
+    if (PQgetisnull(res, row, col)) {
+        lua_pushnil(L);
+    } else {
+        lua_pushstring(L, PQgetvalue(res, row, col));
+    }
     return 1;
 }
 

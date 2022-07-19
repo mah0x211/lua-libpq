@@ -108,9 +108,9 @@ function testcase.get_value()
     for row = 1, res:ntuples() do
         local line = {}
         for col = 1, res:nfields() do
-            if not res:get_is_null(row, col) then
+            local val = res:get_value(row, col)
+            if val then
                 local len = res:get_length(row, col)
-                local val = res:get_value(row, col)
                 assert.equal(len, #val)
                 line[col] = val
             end
