@@ -49,10 +49,12 @@ function testcase.get_result_stat()
         oid_value = 0,
         fields = {
             {
+                col = 1,
                 format = 0,
                 name = 'id',
             },
             id = {
+                col = 1,
                 format = 0,
                 name = 'id',
             },

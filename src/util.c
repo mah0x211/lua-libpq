@@ -109,7 +109,8 @@ static int get_result_stat_lua(lua_State *L)
             lua_createtable(L, nfields, 0);
             for (int col = 0; col < nfields; col++) {
                 char *fname = PQfname(res, col);
-                lua_createtable(L, 0, 7);
+                lua_createtable(L, 0, 8);
+                lauxh_pushint2tbl(L, "col", col + 1);
                 lauxh_pushstr2tbl(L, "name", fname);
                 lauxh_pushint2tbl(L, "table", PQftable(res, col));
                 lauxh_pushint2tbl(L, "tablecol", PQftablecol(res, col));
