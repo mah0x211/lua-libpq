@@ -17,6 +17,7 @@ dependencies = {
 external_dependencies = {
     LIBPQ = {
         header = "libpq-fe.h",
+        library = "pq",
     },
 }
 build = {
