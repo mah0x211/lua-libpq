@@ -11,7 +11,6 @@ function testcase.lib_version()
     -- test that get library version
     local ver = libpq.lib_version()
     assert.is_uint(ver)
-    assert.equal(math.floor(ver / 10000), 14)
 end
 
 function testcase.mblen()

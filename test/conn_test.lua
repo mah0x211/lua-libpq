@@ -532,32 +532,33 @@ function testcase.consume_input()
     assert(c:consume_input())
 end
 
-function testcase.enter_pipeline_mode()
+function testcase.enter_pipeline_mode_and_exit_pipeline_mode()
     local c = assert(libpq.connect())
 
-    -- test that true
+    -- test that enter the pipeline mode
+    assert.equal(c:pipeline_status(), libpq.PQ_PIPELINE_OFF)
     assert(c:enter_pipeline_mode())
+    assert.equal(c:pipeline_status(), libpq.PQ_PIPELINE_ON)
+
+    -- test that method can be called twice
     assert(c:enter_pipeline_mode())
 
-    -- test that false if the query in processing
-    c = assert(libpq.connect())
-    assert(c:send_query('SELECT 1 + 2'))
-    local ok, err = c:enter_pipeline_mode()
-    assert.is_false(ok)
-    assert.match(err, 'cannot enter pipeline mode')
-end
+    -- test that exit the pipeline mode
+    assert(c:exit_pipeline_mode())
+    assert.equal(c:pipeline_status(), libpq.PQ_PIPELINE_OFF)
 
-function testcase.exit_pipeline_mode()
-    local c = assert(libpq.connect())
-
-    -- test that true if currently in pipeline mode
-    assert(c:enter_pipeline_mode())
+    -- test that method can be called twice
     assert(c:exit_pipeline_mode())
 
-    -- test that false if the query in processing
+    -- test that cannot use send_query method in pipeline mode
     assert(c:enter_pipeline_mode())
-    assert(c:send_query('SELECT 1 + 2'))
-    local ok, err = c:exit_pipeline_mode()
+    local ok, err = c:send_query('SELECT 1 + 2')
+    assert.is_false(ok)
+    assert.match(err, 'not allowed in pipeline mode')
+
+    -- test that cannot exit pipeline mode if the query in processing
+    assert(c:send_query_params('SELECT $1 + $2', 1, 2))
+    ok, err = c:exit_pipeline_mode()
     assert.is_false(ok)
     assert.match(err, 'cannot exit pipeline mode')
 end
