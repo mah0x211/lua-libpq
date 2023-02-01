@@ -13,5 +13,5 @@ lua bindings for libpq.
 ## Installation
 
 ```
-luarocks install libpq --server=https://luarocks.org/dev
+luarocks install libpq
 ```
