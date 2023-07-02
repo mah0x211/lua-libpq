@@ -1,6 +1,8 @@
 lua-libpq
 ====
 
+**This module has been integrated into the [lua-postgres](https://github.com/mah0x211/lua-postgres) module.**
+
 [![test](https://github.com/mah0x211/lua-libpq/actions/workflows/test.yml/badge.svg)](https://github.com/mah0x211/lua-libpq/actions/workflows/test.yml)
 [![codecov](https://codecov.io/gh/mah0x211/lua-libpq/branch/master/graph/badge.svg)](https://codecov.io/gh/mah0x211/lua-libpq)
 
